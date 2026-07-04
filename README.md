@@ -157,7 +157,7 @@ echo shape, so custom/unregistered capabilities don't break. The Route
 Tester page auto-fills the matching example payload when you pick a
 capability from its dropdown.
 
-## Bonus: Agentic AI
+## Agentic AI
 
 - **Generate routing config from plain English** — `server/utils/aiRuleGenerator.js`,
   a regex-based parser (no external LLM call) that turns sentences like
