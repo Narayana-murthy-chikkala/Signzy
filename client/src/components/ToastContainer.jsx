@@ -17,7 +17,7 @@ export default function ToastContainer() {
         <div
           key={toast.id}
           role="status"
-          className={`flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${
+          className={`flex animate-slide-in-right items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${
             VARIANT_STYLES[toast.type] || VARIANT_STYLES.info
           }`}
         >
@@ -26,7 +26,7 @@ export default function ToastContainer() {
             type="button"
             onClick={() => dismissToast(toast.id)}
             aria-label="Dismiss notification"
-            className="shrink-0 text-lg leading-none opacity-60 hover:opacity-100"
+            className="shrink-0 text-lg leading-none opacity-60 transition-opacity hover:opacity-100"
           >
             ×
           </button>

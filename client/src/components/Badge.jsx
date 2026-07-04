@@ -12,7 +12,7 @@ const VARIANTS = {
 
 export default function Badge({ variant = 'neutral', children }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${VARIANTS[variant] || VARIANTS.neutral}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors duration-200 ${VARIANTS[variant] || VARIANTS.neutral}`}>
       {children}
     </span>
   );

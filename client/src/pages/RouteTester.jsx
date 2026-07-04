@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
+import { useRole } from '../context/RoleContext';
 import { fetchRoutingConfigs, routeRequest } from '../services/api';
 import ResponseViewer from '../components/ResponseViewer';
 import { STRATEGY_LABELS } from '../utils/format';
@@ -11,6 +12,7 @@ const DEFAULT_PAYLOAD = JSON.stringify(DEFAULT_PAYLOAD_OBJ, null, 2);
 export default function RouteTester() {
   const { vendors } = useAppContext();
   const { showToast } = useToast();
+  const { isAdmin } = useRole();
   const capabilities = useMemo(
     () => Array.from(new Set(vendors.flatMap((v) => v.supportedFeatures || []))).sort(),
     [vendors]
@@ -70,9 +72,11 @@ export default function RouteTester() {
       const data = await routeRequest({
         capability: capability || undefined,
         payload,
-        strategy,
+        // The client persona only calls the unified endpoint - it never picks
+        // a routing strategy or condition set, that's the router's decision.
+        strategy: isAdmin ? strategy : undefined,
         requirements: Object.keys(requirements).length ? requirements : undefined,
-        conditions: selectedConfig?.conditions?.length ? selectedConfig.conditions : undefined,
+        conditions: isAdmin && selectedConfig?.conditions?.length ? selectedConfig.conditions : undefined,
       });
       setResult(data);
     } catch (err) {
@@ -90,12 +94,16 @@ export default function RouteTester() {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-slate-900">Route Tester</h2>
-      <p className="mt-1 text-sm text-slate-500">Send a simulated request through the routing engine.</p>
+      <h2 className="text-2xl font-semibold text-slate-900">{isAdmin ? 'Route Tester' : 'Submit Request'}</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        {isAdmin
+          ? 'Send a simulated request through the routing engine.'
+          : 'Call the unified API - the router picks the best vendor for you behind the scenes.'}
+      </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <form onSubmit={handleSubmit} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          {savedConfigs.length > 0 && (
+        <form onSubmit={handleSubmit} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow duration-200">
+          {isAdmin && savedConfigs.length > 0 && (
             <label className="block text-sm font-medium text-slate-700">
               Saved AI Rule Config <span className="font-normal text-slate-400">(optional)</span>
               <select
@@ -119,7 +127,7 @@ export default function RouteTester() {
             </label>
           )}
 
-          <label className={`block text-sm font-medium text-slate-700 ${savedConfigs.length > 0 ? 'mt-4' : ''}`}>
+          <label className={`block text-sm font-medium text-slate-700 ${isAdmin && savedConfigs.length > 0 ? 'mt-4' : ''}`}>
             Capability
             <select
               value={capability}
@@ -135,20 +143,22 @@ export default function RouteTester() {
             </select>
           </label>
 
-          <label className="mt-4 block text-sm font-medium text-slate-700">
-            Routing Strategy
-            <select
-              value={strategy}
-              onChange={(e) => setStrategy(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {isAdmin && (
+            <label className="mt-4 block text-sm font-medium text-slate-700">
+              Routing Strategy
+              <select
+                value={strategy}
+                onChange={(e) => setStrategy(e.target.value)}
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              >
+                {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="mt-4 block text-sm font-medium text-slate-700">
             Payload (JSON) <span className="font-normal text-slate-400">(auto-filled per capability, editable)</span>
@@ -191,17 +201,17 @@ export default function RouteTester() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="mt-4 w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 disabled:opacity-50"
           >
-            {loading ? 'Routing…' : 'Route Request'}
+            {loading ? 'Routing…' : isAdmin ? 'Route Request' : 'Submit Request'}
           </button>
         </form>
 
         <div>
           {result ? (
-            <ResponseViewer result={result} />
+            <ResponseViewer result={result} isAdmin={isAdmin} />
           ) : (
-            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
+            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400 transition-colors duration-200">
               Submit a request to see the standard response here.
             </div>
           )}

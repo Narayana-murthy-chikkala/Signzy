@@ -1,10 +1,19 @@
 import axios from 'axios';
+import { getStoredRole } from '../context/RoleContext';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+});
+
+// Tags every request with the current dashboard persona so the server can
+// enforce role-based response shaping itself (e.g. stripping vendor identity
+// for the client role) rather than relying on the frontend to hide it.
+api.interceptors.request.use((config) => {
+  config.headers['x-role'] = getStoredRole();
+  return config;
 });
 
 // Vendors

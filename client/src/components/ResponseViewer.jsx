@@ -1,21 +1,28 @@
 import Badge from './Badge';
 import { formatCost, formatMs } from '../utils/format';
 
-export default function ResponseViewer({ result }) {
+// `isAdmin` gates anything that would reveal which vendor handled the
+// request (or why) - the client persona only ever sees the outcome, latency,
+// and cost, matching the brief: "the client should not know which vendor was
+// used". The backend already omits these fields for the client role; this
+// is a second layer so the UI never assumes they're there.
+export default function ResponseViewer({ result, isAdmin = true }) {
   if (!result) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="animate-fade-in-up rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-900">Standard Response</h3>
         <Badge variant={result.status.toLowerCase()}>{result.status}</Badge>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-        <div>
-          <dt className="text-slate-500">Vendor Used</dt>
-          <dd className="font-medium text-slate-900">{result.vendorUsed || '—'}</dd>
-        </div>
+        {isAdmin && (
+          <div>
+            <dt className="text-slate-500">Vendor Used</dt>
+            <dd className="font-medium text-slate-900">{result.vendorUsed || '—'}</dd>
+          </div>
+        )}
         <div>
           <dt className="text-slate-500">Latency</dt>
           <dd className="font-medium text-slate-900">{formatMs(result.latencyMs)}</dd>
@@ -24,13 +31,15 @@ export default function ResponseViewer({ result }) {
           <dt className="text-slate-500">Cost</dt>
           <dd className="font-medium text-slate-900">{formatCost(result.cost)}</dd>
         </div>
-        <div className="col-span-2 sm:col-span-3">
-          <dt className="text-slate-500">Routing Reason</dt>
-          <dd className="font-medium text-slate-900">{result.routingReason}</dd>
-        </div>
+        {isAdmin && (
+          <div className="col-span-2 sm:col-span-3">
+            <dt className="text-slate-500">Routing Reason</dt>
+            <dd className="font-medium text-slate-900">{result.routingReason}</dd>
+          </div>
+        )}
       </dl>
 
-      {result.failoverHistory?.length > 0 && (
+      {isAdmin && result.failoverHistory?.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 text-sm font-medium text-slate-700">Failover History</p>
           <ul className="space-y-1">

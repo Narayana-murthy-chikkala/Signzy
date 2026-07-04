@@ -22,7 +22,7 @@ export default function VendorTable({ vendors, onEdit, onDelete }) {
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {vendors.map((vendor) => (
-            <tr key={vendor._id}>
+            <tr key={vendor._id} className="transition-colors duration-150 hover:bg-slate-50">
               <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-900">{vendor.name}</td>
               <td className="whitespace-nowrap px-4 py-3 text-slate-600">{vendor.priority}</td>
               <td className="whitespace-nowrap px-4 py-3 text-slate-600">{vendor.weight}</td>
@@ -45,14 +45,14 @@ export default function VendorTable({ vendors, onEdit, onDelete }) {
                 <button
                   type="button"
                   onClick={() => onEdit(vendor)}
-                  className="mr-3 font-medium text-indigo-600 hover:text-indigo-800"
+                  className="mr-3 font-medium text-indigo-600 transition-colors hover:text-indigo-800"
                 >
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(vendor)}
-                  className="font-medium text-rose-600 hover:text-rose-800"
+                  className="font-medium text-rose-600 transition-colors hover:text-rose-800"
                 >
                   Delete
                 </button>
